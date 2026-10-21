@@ -259,7 +259,7 @@ flowchart LR
 | :--- | :--- | :--- | :--- |
 | **Integrante 1** | Arquitectura Algorítmica | Motor C4.5, Entropía, Gain Ratio, recursión y predicción | `S1-03`, `S2-02`, `S2-03`, `S3-01`, `S4-04` |
 | **Integrante 2** | Modelos & Preprocesamiento | Pipeline de datos, Random Forest (Sklearn) y métricas | `S1-02`, `S2-01`, `S2-04`, `S3-02`, `S4-02` |
-| **Integrante 3** | UI & Experiencia de Usuario | Google Colab, interactividad con `ipywidgets` y testing UX | `S1-01`, `S1-05`, `S2-05`, `S3-04`, `S4-01`, `S4-05` |
+| [**Daniel Benjamín López**](https://github.com/DanielBenjaminLopez) (Integrante 3) | UI & Experiencia de Usuario | Google Colab, interactividad con `ipywidgets` y testing UX | `S1-01`, `S1-05`, `S2-05`, `S3-04`, `S4-01`, `S4-05` |
 | **Integrante 4** | Documentación Académica & QA | Informe Springer LNCS, control Trello y simulaciones | `S1-04`, `S1-06`, `S2-06`, `S3-03`, `S3-05`, `S4-03`, `S4-06` |
 
 ---
