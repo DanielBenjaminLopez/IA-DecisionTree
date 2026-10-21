@@ -132,7 +132,7 @@ El módulo de evaluación compara de forma sistemática:
 ## 📅 Planificación y Metodología
 
 El proyecto se gestiona mediante una metodología de desarrollo ágil iterativa dividida en **4 Sprints**, con seguimiento continuo en **Trello**:
-🔗 **[Tablero de Trello del Proyecto](https://trello.com/)** *(Actualizar con el enlace público o de la cátedra)*
+🔗 **[TPI IA | Trello](https://trello.com/b/iK7Kf2K1/tpi-ia)**
 
 ### 🔄 Flujo de Trabajo en Trello (Kanban)
 ```text
