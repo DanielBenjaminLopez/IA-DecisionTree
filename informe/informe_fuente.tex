@@ -1,0 +1,127 @@
+\documentclass[runningheads]{llncs}
+
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-nodecimaldot]{babel}
+
+\begin{document}
+
+\title{Comparación del Rendimiento entre el Algoritmo Decision Tree (C4.5) y el Ensamble Random Forest en Tareas de Clasificación}
+\subtitle{Trabajo Práctico Integrador -- Inteligencia Artificial 2026}
+
+\titlerunning{Decision Tree C4.5 vs Random Forest}
+
+\author{Integrante 1\inst{1} \and Integrante 2\inst{1} \and Integrante 3\inst{1} \and Integrante 4\inst{1}}
+\authorrunning{Equipo de Desarrollo}
+
+\institute{Universidad Tecnológica Nacional -- Facultad Regional\\
+Departamento de Ingeniería en Sistemas de Información\\
+\email{\{integrante1, integrante2, integrante3, integrante4\}@alumnos.edu.ar}}
+
+\maketitle
+
+\begin{abstract}
+Este trabajo presenta el desarrollo e implementación algorítmica desde cero de un Árbol de Decisión basado en la metodología C4.5 de Quinlan, y su posterior comparación experimental con el modelo de ensamble Random Forest sobre problemas de clasificación supervisada. Se evalúa el impacto de la variación de hiperparámetros (profundidad máxima, criterio de división y número de estimadores) sobre métricas de desempeño como Accuracy, Precision, Recall, F1-Score y matrices de confusión, analizando además el costo computacional asociado a cada enfoque. Los resultados evidencian el equilibrio existente entre la interpretabilidad de un árbol individual y la capacidad de reducción de varianza y robustez provista por el ensamble.
+
+\keywords{Árboles de Decisión \and C4.5 \and Random Forest \and Ensambles \and Clasificación Supervisada \and Inteligencia Artificial.}
+\end{abstract}
+
+% -------------------------------------------------------------------------
+\section{Introducción}
+% -------------------------------------------------------------------------
+El aprendizaje automático supervisado cuenta con diversas familias de clasificadores, entre las cuales las estructuras basadas en árboles de decisión ocupan un rol protagónico debido a su transparencia e interpretabilidad simbólica \cite{liu2011web}.
+
+El objetivo principal de este trabajo es:
+\begin{enumerate}
+    \item Implementar íntegramente un algoritmo de Árbol de Decisión (DT) siguiendo las pautas teóricas del sistema C4.5 propuesto por Quinlan \cite{quinlan1993c45}, con capacidad para manejar tanto atributos continuos como discretos.
+    \item Evaluar y contrastar experimentalmente dicho clasificador frente a un modelo de ensamble Random Forest (RF) \cite{breiman2001random} implementado mediante Scikit-learn \cite{pedregosa2011scikit}.
+    \item Medir el impacto de diferentes parametrizaciones y analizar el compromiso entre precisión predictiva, sobreajuste (overfitting) y costo computacional.
+\end{enumerate}
+
+% -------------------------------------------------------------------------
+\section{Breve Descripción de los Algoritmos}
+% -------------------------------------------------------------------------
+\subsection{Decision Tree (C4.5)}
+El algoritmo C4.5 construye un árbol de decisión de forma recursiva descendente (top-down induction). En cada nodo, evalúa la ganancia normalizada o \textit{Gain Ratio} proporcionada por cada atributo candidato \cite{liu2011web,quinlan1993c45}:
+\begin{equation}
+\text{GainRatio}(S, A) = \frac{\text{Gain}(S, A)}{\text{SplitInfo}(S, A)}
+\end{equation}
+donde la ganancia de información se obtiene como:
+\begin{equation}
+\text{Gain}(S, A) = \text{Entropy}(S) - \sum_{v \in \text{Valores}(A)} \frac{|S_v|}{|S|} \text{Entropy}(S_v)
+\end{equation}
+y el factor de división se calcula como:
+\begin{equation}
+\text{SplitInfo}(S, A) = - \sum_{v \in \text{Valores}(A)} \frac{|S_v|}{|S|} \log_2 \frac{|S_v|}{|S|}
+\end{equation}
+
+Para atributos numéricos continuos, C4.5 ordena las muestras y evalúa particiones binarias de la forma $A \leq \theta$ vs $A > \theta$, seleccionando el umbral $\theta$ que maximiza la ganancia.
+
+\subsection{Random Forest}
+Propuesto por Breiman \cite{breiman2001random}, Random Forest es un método de ensamble que combina múltiples árboles predictores no correlacionados entrenados mediante:
+\begin{itemize}
+    \item \textbf{Bootstrap Aggregation (Bagging):} Cada árbol se entrena sobre una muestra aleatoria con reemplazo del conjunto de datos original.
+    \item \textbf{Random Feature Selection:} En cada división del árbol, sólo se considera un subconjunto aleatorio de atributos candidatos (típicamente $\sqrt{p}$ en clasificación).
+\end{itemize}
+La predicción final se determina mediante el voto de la mayoría (majority voting), reduciendo drásticamente la varianza sin incrementar sensiblemente el sesgo.
+
+% -------------------------------------------------------------------------
+\section{Descripción de la Solución Implementada}
+% -------------------------------------------------------------------------
+\subsection{Arquitectura del Sistema}
+Se diseñó un módulo en Python estructurado en clases orientadas a objetos:
+\begin{itemize}
+    \item \texttt{Node}: Estructura que almacena la condición de corte (atributo, umbral o categoría), los nodos hijos y el valor de clase predicho.
+    \item \texttt{DecisionTreeClassifierC45}: Implementación del algoritmo con soporte para hiperparámetros como \texttt{max\_depth}, \texttt{min\_samples\_split} y \texttt{criterion} (\textit{Gain Ratio} o \textit{Information Gain}).
+    \item \texttt{Evaluator}: Generador de métricas (Accuracy, Precision, Recall, F1, ROC-AUC) y matriz de confusión.
+\end{itemize}
+
+\subsection{Problemas Encontrados y Soluciones Adoptadas}
+Durante el desarrollo se abordaron los siguientes desafíos:
+\begin{itemize}
+    \item \textbf{Manejo de variables continuas:} La búsqueda ingenua de umbrales en atributos continuos presenta complejidad computacional alta. Se optimizó ordenando previamente los valores únicos y evaluando exclusivamente los puntos medios entre clases disímiles.
+    \item \textbf{Sobreajuste (Overfitting):} Árboles individuales sin restricción de profundidad memorizan el conjunto de entrenamiento. Se implementaron mecanismos de prepoda (\textit{pre-pruning}) mediante control de profundidad máxima y tamaño mínimo de muestra por hoja.
+    \item \textbf{División por cero en SplitInfo:} Cuando un atributo presenta un único valor en el subconjunto, $\text{SplitInfo} \to 0$. Se incorporó una guarda numérica que descarta divisiones inválidas.
+\end{itemize}
+
+\subsection{Interfaz de Usuario en Google Colab}
+Para cumplir con el requerimiento de una interfaz amigable, se integraron controles interactivos mediante la librería \texttt{ipywidgets}, permitiendo la carga interactiva de datasets, ajuste de hiperparámetros vía deslizadores (sliders) y generación instantánea de gráficos comparativos.
+
+% -------------------------------------------------------------------------
+\section{Simulaciones Realizadas y Resultados Obtenidos}
+% -------------------------------------------------------------------------
+Se llevaron a cabo simulaciones comparativas variando:
+\begin{enumerate}
+    \item Profundidad máxima del árbol ($d \in [2, 15]$).
+    \item Número de estimadores en Random Forest ($N \in [10, 200]$).
+    \item Proporción de partición train/test (80/20 y validación cruzada k-fold).
+\end{enumerate}
+
+\begin{table}[h]
+\centering
+\caption{Comparativa preliminar de métricas de rendimiento (Promedio $\pm$ Desvío Estándar)}
+\label{tab:resultados}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Modelo} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-Score} & \textbf{Tiempo Entr. (s)} \\
+\midrule
+Decision Tree (C4.5 propio) & -- & -- & -- & -- & -- \\
+Random Forest (Sklearn) & -- & -- & -- & -- & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% -------------------------------------------------------------------------
+\section{Conclusiones}
+% -------------------------------------------------------------------------
+Los resultados experimentales confirman que... (completar con las conclusiones finales tras las simulaciones con el dataset oficial de la cátedra).
+
+% -------------------------------------------------------------------------
+\bibliographystyle{splncs04}
+\bibliography{referencias}
+
+\end{document}
